@@ -1,0 +1,77 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using hMailServer;
+using System.Net;
+using System.Net.Mail;
+
+
+namespace hMailDLL
+{
+    public class Email
+    {
+        // 连上hmailserver
+        string USERNAME = "Administrator";
+        string PASSWORD = "passwd";
+        string DOMAIN = "your.domain";
+        string IP = "0.0.0.0";
+        int PORT = 587;
+
+        // 创建邮箱账号
+        public string addUser(string email, string password)
+        {
+            Application mailserver = new hMailServer.Application();
+            //admin登录验证
+            mailserver.Authenticate(USERNAME, PASSWORD);
+            // 获取*.com 域
+            var domain = mailserver.Domains.ItemByName[DOMAIN];
+            var obAccounts = domain.Accounts;
+            var obNewAccount = obAccounts.Add();
+            obNewAccount.Address = email;
+            obNewAccount.Password = password;
+            obNewAccount.Active = true;
+            obNewAccount.MaxSize = 500; //500mb
+            obNewAccount.Save();
+            return "success";
+        }
+
+
+        //待发邮件格式
+        public class MailInfo
+        {
+            public string From;
+            public string to;
+            public string subject;
+            public string body;
+        }
+
+
+        //发邮件
+        public string sendmail(string eml, string psw, MailInfo mailInfo)
+        {
+            MailMessage mailObject = new MailMessage();
+            //设置发件人
+            mailObject.From = new MailAddress(mailInfo.From); //发件人地址
+            //设置收件人
+            mailObject.To.Add(new MailAddress(mailInfo.to));
+
+            //为了防止乱码,设置主题编码格式
+            mailObject.SubjectEncoding = Encoding.UTF8;
+            mailObject.Subject = mailInfo.subject;
+            //设置正文编码格式
+            mailObject.BodyEncoding = Encoding.UTF8;
+            mailObject.Body = mailInfo.body;
+            //2.创建一个发送邮件的对象
+            SmtpClient smtpClient = new SmtpClient();
+            smtpClient.Host = IP; //设置服务器ip地址
+            smtpClient.Port = PORT; //端口号
+
+            smtpClient.Credentials = new NetworkCredential(eml, psw);
+            //发送
+            smtpClient.Send(mailObject);
+            return "success";
+        }
+    }
+}
