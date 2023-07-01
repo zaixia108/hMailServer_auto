@@ -1,1 +1,2 @@
 # hMailServer_auto
+用于调用hMail邮件服务器进行批量操作，DLL仅适用于个人使用
